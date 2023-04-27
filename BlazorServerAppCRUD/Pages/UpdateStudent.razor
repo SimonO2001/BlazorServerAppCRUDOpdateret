@@ -1,0 +1,104 @@
+﻿@page "/update-student/{StudentId:int}"
+@using BlazorServerAppCRUD.Models;
+@using BlazorServerAppCRUD.Services;
+@inject IStudentServices StudentServices
+@inject NavigationManager NavigationManager
+
+<PageTitle>Update Student</PageTitle>
+
+<h1>Update Student</h1>
+
+<EditForm Model="@student" OnValidSubmit="UpdateUser">
+    <DataAnnotationsValidator />
+    <div class="mb-3">
+        <label for="StudentId" class="form-label">Student Id</label>
+        <div class="col-md-4">
+            <InputNumber readonly="@ReadOnly" class="form-control" @bind-Value="student.StudentId" />
+        </div>
+        <ValidationMessage For="@(() => student.FirstName)" />
+    </div>
+    <div class="mb-3">
+        <label for="FirstName" class="form-label">First Name</label>
+        <div class="col-md-4">
+            <InputText class="form-control" @bind-Value="student.FirstName" />
+        </div>
+        <ValidationMessage For="@(() => student.FirstName)" />
+    </div>
+    <div class="mb-3">
+        <label for="LastName" class="form-label">Last Name</label>
+        <div class="col-md-4">
+            <InputText class="form-control" @bind-Value="student.LastName" />
+        </div>
+        <ValidationMessage For="@(() => student.LastName)" />
+    </div>
+    <div class="mb-3">
+        <label for="EmailAddress" class="form-label">Email Address</label>
+        <div class="col-md-4">
+            <InputText class="form-control" @bind-Value="student.EmailAddress" />
+        </div>
+        <ValidationMessage For="@(() => student.EmailAddress)" />
+    </div>
+    <div class="mb-3">
+        <label for="Gender" class="form-label">Gender</label>
+        <div class="col-md-4">
+            <InputNumber class="form-control" @bind-Value="student.Gender" />
+        </div>
+        <ValidationMessage For="@(() => student.Gender)" />
+    </div>
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button class="btn btn-light" @onclick="Cancel">Cancel</button>
+    </div>
+
+</EditForm>
+
+
+
+
+@code {
+    [Parameter]
+    public int StudentId { get; set; }
+
+    private bool ReadOnly = true;  // used to make StudentId read-only
+
+    protected StudentEntity student = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        //string apiUrl = "https://localhost:7211/api/students/get-students-list";
+        //var response = await Http.GetAsync(apiUrl);
+        //response.EnsureSuccessStatusCode();
+        //string responseBodyJson = await response.Content.ReadAsStringAsync();
+
+        //var studentsLists = JsonConvert.DeserializeObject<List<StudentEntity>>(responseBodyJson);
+
+        var studentList = await StudentServices.GetStudentsList();
+        
+
+        student = studentList.Where(x => x.StudentId == StudentId).FirstOrDefault();
+    }
+
+    protected async Task UpdateUser()
+    {
+        string apiUrl = "https://localhost:7211/api/students/update-student";
+        //var response = await Http.GetAsync(apiUrl);
+        //response.EnsureSuccessStatusCode();
+        //string responseBodyJson = await response.Content.ReadAsStringAsync();
+
+
+        if (student.StudentId < 1)
+        {
+            return;
+        }
+
+        await StudentServices.UpdateStudent(student);
+
+        //await Http.PostAsJsonAsync(apiUrl, student);
+        NavigationManager.NavigateTo("/student-list");
+    }
+
+    protected void Cancel()
+    {
+
+    }
+}

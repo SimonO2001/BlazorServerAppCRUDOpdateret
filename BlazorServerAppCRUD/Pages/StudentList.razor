@@ -1,0 +1,87 @@
+﻿@page "/student-list"
+@using BlazorServerAppCRUD.Models;
+@using BlazorServerAppCRUD.Services;
+@inject IStudentServices StudentServices
+@inject NavigationManager NavigationManager
+
+<PageTitle>Student List</PageTitle>
+
+<h1>Student List</h1>
+<p>
+    <button class="btn btn-primary" @onclick="(async () => await NavigateToAddStudent())">Add New Student</button>
+</p>
+
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Student Id</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Email Addressd</th>
+            <th>Gender</th>
+            <th>Created On</th>
+            <th>Delete</th>
+            <th>Update</th>
+
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var std in studentList)
+        {
+            <tr>
+                <td>@std.StudentId</td>
+                <td>@std.FirstName</td>
+                <td>@std.LastName</td>
+                <td>@std.EmailAddress</td>
+                <td>@std.Gender</td>
+                <td>@std.CreatedOn</td>
+                <td><button type="button" @onclick="(async () => await DeleteStudent(std.StudentId))" class="btn btn-danger">Delete</button></td>
+                <td><button type="button" @onclick="(async () => await  NavigateToUpdateStudent(std.StudentId))" class="btn btn-primary">Edit</button></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+@code {
+    protected List<StudentEntity> studentList = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetStudentList();
+    }
+
+    protected async Task<List<StudentEntity>> GetStudentList()
+    {
+        var res = await StudentServices.GetStudentsList();
+
+        studentList = res;
+        return studentList;
+    }
+
+    protected async Task DeleteStudent(int StudentId)
+    {
+
+        await StudentServices.DeleteStudent(StudentId);
+        StateHasChanged();
+        await GetStudentList();
+
+        //NavigationManager.NavigateTo("/");
+    }
+
+    protected async Task NavigateToUpdateStudent(int StudentId)
+    {
+        string pageURL = $"/update-student/{StudentId.ToString()}";
+
+        NavigationManager.NavigateTo(pageURL);
+    }
+
+    protected async Task NavigateToAddStudent()
+    {
+        string pageURL = "/add-student";
+
+        NavigationManager.NavigateTo(pageURL);
+    }
+}

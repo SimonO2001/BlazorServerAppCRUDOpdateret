@@ -1,0 +1,80 @@
+﻿
+@page "/register"
+@using BlazorServerAppCRUD.Models;
+@using System.Threading.Tasks;
+@using BlazorServerAppCRUD.Services;
+@using Dapper;
+@using Microsoft.Extensions.Configuration;
+@using Microsoft.AspNetCore.Components;
+
+@inject UserService UserService
+
+<h1>Create an Account</h1>
+
+@if (errorMessage != null)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+<form @onsubmit="HandleSubmit">
+    <div class="form-group">
+        <label for="firstName">First Name:</label>
+        <input type="text" class="form-control" id="firstName" @bind="user.FirstName">
+    </div>
+    <div class="form-group">
+        <label for="lastName">Last Name:</label>
+        <input type="text" class="form-control" id="lastName" @bind="user.LastName">
+    </div>
+    <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" class="form-control" id="email" @bind="user.Email">
+    </div>
+    <div class="form-group">
+        <label for="login">Username:</label>
+        <input type="text" class="form-control" id="login" @bind="user.Login">
+    </div>
+    <div class="form-group">
+        <label for="password">Password:</label>
+        <input type="password" class="form-control" id="password" @bind="user.Password">
+    </div>
+    <div class="form-group">
+        <label for="password2">Confirm Password:</label>
+        <input type="password" class="form-control" id="password2" @bind="user.Password2">
+    </div>
+    <button type="submit" class="btn btn-primary">Create Account</button>
+</form>
+
+@code {
+
+
+    private User user = new User();
+    private string errorMessage;
+    private readonly NavigationManager _navigationManager;
+
+    private async Task HandleSubmit()
+    {
+        // Check if passwords match
+        if (user.Password != user.Password2)
+        {
+            errorMessage = "Passwords do not match";
+            return;
+        }
+
+        // Create user in database
+        var result = await UserService.CreateUser(user);
+
+        if (result == -1)
+        {
+            errorMessage = "Email already in use";
+        }
+        else if (result > 0)
+        {
+            // User created successfully
+        _navigationManager.NavigateTo("/Profile");
+        }
+        else
+        {
+            errorMessage = "An error occurred while creating your account";
+        }
+    }
+}
